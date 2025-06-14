@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "202043859747",
+    "project_id": "pc02dpafernando",
+    "storage_bucket": "pc02dpafernando.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:202043859747:android:52bba94b3b06a663746296",
+        "android_client_info": {
+          "package_name": "com.example.pc02_rodriguez_fernando_20200046"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFwtU5lKhW2rfdpw4OrdcqKwexKiaS4sE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
