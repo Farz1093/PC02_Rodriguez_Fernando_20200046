@@ -78,6 +78,6 @@ dependencies {
     //Add lifecycle viewmodel
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
 
-
+    //firebase implementation
     implementation(platform("com.google.firebase:firebase-bom:33.15.0"))
 }
