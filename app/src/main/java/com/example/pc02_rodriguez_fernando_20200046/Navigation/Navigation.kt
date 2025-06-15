@@ -16,7 +16,7 @@ fun AppNavigator() {
             LoginScreen(navController)
         }
         composable("conversion") {
-            ConversionScreen()
+            ConversionScreen(navController)
         }
     }
 }

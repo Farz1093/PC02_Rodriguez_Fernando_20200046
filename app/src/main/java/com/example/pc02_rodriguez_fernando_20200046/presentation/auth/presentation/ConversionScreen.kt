@@ -23,12 +23,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
-fun ConversionScreen() {
+fun ConversionScreen(navController: NavHostController) {
     val db = FirebaseFirestore.getInstance()
     val auth = FirebaseAuth.getInstance()
 
@@ -88,7 +89,9 @@ fun ConversionScreen() {
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = {
             FirebaseAuth.getInstance().signOut()
-
+            navController.navigate("login") {
+                popUpTo("conversion") { inclusive = true }
+            }
         }) {
             Text("Cerrar sesión")
         }
