@@ -32,6 +32,9 @@ fun LoginScreen(navController: NavController) {
     Column(modifier = Modifier.padding(16.dp)) {
         TextField(value = email, onValueChange = { email = it }, label = { Text("Email") })
         TextField(value = password, onValueChange = { password = it }, label = { Text("Password") }, visualTransformation = PasswordVisualTransformation())
+        //usuario: dpaesan@esan.pe
+        //contraseña: 123456
+
         Button(onClick = {
             auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
