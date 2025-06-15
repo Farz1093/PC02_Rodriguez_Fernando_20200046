@@ -1,8 +1,11 @@
 package com.example.pc02_rodriguez_fernando_20200046.presentation.auth.presentation
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
@@ -26,89 +29,80 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun ConversionScreen() {
-    val auth = FirebaseAuth.getInstance()
     val db = FirebaseFirestore.getInstance()
+    val auth = FirebaseAuth.getInstance()
 
     var amount by remember { mutableStateOf("") }
-    var fromCurrency by remember { mutableStateOf("") }
-    var toCurrency by remember { mutableStateOf("") }
+    var fromCurrency by remember { mutableStateOf("USD") }
+    var toCurrency by remember { mutableStateOf("EUR") }
     var result by remember { mutableStateOf<String?>(null) }
     var rates by remember { mutableStateOf<Map<String, Double>>(emptyMap()) }
 
-    var fromExpanded by remember { mutableStateOf(false) }
-    var toExpanded by remember { mutableStateOf(false) }
-
-    // Leer tasas desde Firebase una vez
-    LaunchedEffect(Unit) {
+    // Leer tasas desde Firebase
+    LaunchedEffect(true) {
         db.collection("Conversion").document("conversion").get()
             .addOnSuccessListener { doc ->
-                val data = doc.data?.mapValues { it.value.toString().toDouble() } ?: emptyMap()
-                rates = data + ("USD" to 1.0)
-                if (fromCurrency.isEmpty()) fromCurrency = "USD"
-                if (toCurrency.isEmpty()) toCurrency = "EUR"
+                val loadedRates = doc.data?.mapValues { it.value.toString().toDouble() } ?: emptyMap()
+                rates = loadedRates + ("USD" to 1.0)  // Agrega USD como base
             }
     }
 
+    if (rates.isEmpty()) {
+        Text("Cargando tasas de cambio...")
+        return
+    }
+
     Column(modifier = Modifier.padding(16.dp)) {
-        Text("Monto")
-        TextField(value = amount, onValueChange = { amount = it })
+        TextField(
+            value = amount,
+            onValueChange = { amount = it },
+            label = { Text("Monto") }
+        )
 
-        // FROM Dropdown
+        Spacer(modifier = Modifier.height(8.dp))
         Text("Desde:")
-        Box {
-            TextButton(onClick = { fromExpanded = true }) {
-                Text(fromCurrency)
-            }
-            DropdownMenu(expanded = fromExpanded, onDismissRequest = { fromExpanded = false }) {
-                rates.keys.forEach { currency ->
-                    DropdownMenuItem(onClick = {
-                        fromCurrency = currency
-                        fromExpanded = false
-                    }, text = { Text(currency) })
-                }
-            }
-        }
+        CurrencyDropdown(rates.keys.toList(), fromCurrency) { fromCurrency = it }
 
-        // TO Dropdown
+        Spacer(modifier = Modifier.height(8.dp))
         Text("Hacia:")
-        Box {
-            TextButton(onClick = { toExpanded = true }) {
-                Text(toCurrency)
-            }
-            DropdownMenu(expanded = toExpanded, onDismissRequest = { toExpanded = false }) {
-                rates.keys.forEach { currency ->
-                    DropdownMenuItem(onClick = {
-                        toCurrency = currency
-                        toExpanded = false
-                    }, text = { Text(currency) })
-                }
-            }
-        }
+        CurrencyDropdown(rates.keys.toList(), toCurrency) { toCurrency = it }
 
+        Spacer(modifier = Modifier.height(12.dp))
         Button(onClick = {
             val input = amount.toDoubleOrNull()
-            val fromRate = rates[fromCurrency]
-            val toRate = rates[toCurrency]
-            if (input != null && fromRate != null && toRate != null) {
+            if (input != null) {
+                val fromRate = rates[fromCurrency] ?: 1.0
+                val toRate = rates[toCurrency] ?: 1.0
                 val converted = input / fromRate * toRate
-                result = "$amount $fromCurrency ≈ ${"%.2f".format(converted)} $toCurrency"
-
-                val conversion = hashMapOf(
-                    "uid" to auth.currentUser?.uid,
-                    "timestamp" to FieldValue.serverTimestamp(),
-                    "amount" to input,
-                    "fromCurrency" to fromCurrency,
-                    "toCurrency" to toCurrency,
-                    "result" to converted
-                )
-                db.collection("conversions").add(conversion)
+                result = "$amount $fromCurrency = ${"%.2f".format(converted)} $toCurrency"
             }
-        }, modifier = Modifier.padding(top = 16.dp)) {
+        }) {
             Text("Convertir")
         }
 
         result?.let {
-            Text(it, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(it, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
+fun CurrencyDropdown(options: List<String>, selected: String, onSelected: (String) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Column {
+        Text(selected, modifier = Modifier
+            .clickable { expanded = true }
+            .padding(8.dp))
+
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            options.forEach {
+                DropdownMenuItem(onClick = {
+                    onSelected(it)
+                    expanded = false
+                }, text = { Text(it) })
+            }
         }
     }
 }
